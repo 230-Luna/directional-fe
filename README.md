@@ -14,8 +14,8 @@
 1. .env 생성, 아래 내용 추가
 
 ```
-EMAIL={이메일로 보내준 이메일}
-PASSWORD={이메일로 보내준 패스워드}
+VITE_EMAIL={이메일로 보내준 이메일}
+VITE_PASSWORD={이메일로 보내준 패스워드}
 ```
 
 2. npm install 커맨드 실행
