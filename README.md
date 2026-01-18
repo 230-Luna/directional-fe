@@ -2,7 +2,7 @@
 
 ## 배포링크
 
-[디렉셔널 FE 과제 배포 링크](https://directional-fe.vercel.app/?searchWord=)
+[디렉셔널 FE 과제 배포 링크](https://directional-fe.vercel.app)
 
 ## 기술 스택
 
