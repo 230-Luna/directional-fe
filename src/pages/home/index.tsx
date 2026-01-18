@@ -147,105 +147,111 @@ function Posts() {
   return (
     <>
       <Spacing size={16} />
+
       <Flex
-        justify="right"
-        gap={16}
-        css={{ width: '100%' }}>
-        <DeleteAllPostButton />
-        <CreatePostButton />
+        justify="space-between"
+        css={{ padding: '0 24px' }}>
+        <Flex
+          justify="right"
+          gap={16}>
+          {(Object.entries(visibleColumns) as [ColumnKey, boolean][]).map(
+            ([key, value]) => (
+              <Input
+                value=""
+                label={key}
+                type="checkbox"
+                checked={value}
+                onChange={() =>
+                  setVisibleColumns(prev => ({
+                    ...prev,
+                    [key]: !prev[key]
+                  }))
+                }
+              />
+            )
+          )}
+        </Flex>
 
-        {(Object.entries(visibleColumns) as [ColumnKey, boolean][]).map(
-          ([key, value]) => (
-            <Input
-              value=""
-              label={key}
-              type="checkbox"
-              checked={value}
-              onChange={() =>
-                setVisibleColumns(prev => ({
-                  ...prev,
-                  [key]: !prev[key]
-                }))
+        <Flex
+          justify="right"
+          gap={16}>
+          <SelectBox
+            placeholder="카테고리"
+            options={[
+              { value: '', label: '전체' },
+              { value: 'NOTICE', label: 'NOTICE' },
+              { value: 'QNA', label: 'QNA' },
+              { value: 'FREE', label: 'FREE' }
+            ]}
+            value={category}
+            onChange={value =>
+              setSearchParams(
+                RouteUrls.HOME({
+                  searchWord,
+                  category: value,
+                  sortBy,
+                  orderBy
+                })
+              )
+            }
+          />
+          <SelectBox
+            placeholder="정렬"
+            options={[
+              {
+                value: 'title',
+                label: '제목'
+              },
+              {
+                value: 'createdAt',
+                label: '시간'
               }
-            />
-          )
-        )}
-        <SelectBox
-          placeholder="카테고리"
-          options={[
-            { value: '', label: '전체' },
-            { value: 'NOTICE', label: 'NOTICE' },
-            { value: 'QNA', label: 'QNA' },
-            { value: 'FREE', label: 'FREE' }
-          ]}
-          value={category}
-          onChange={value =>
-            setSearchParams(
-              RouteUrls.HOME({
-                searchWord,
-                category: value,
-                sortBy,
-                orderBy
-              })
-            )
-          }
-        />
-        <SelectBox
-          placeholder="정렬"
-          options={[
-            {
-              value: 'title',
-              label: '제목'
-            },
-            {
-              value: 'createdAt',
-              label: '시간'
+            ]}
+            value={sortBy}
+            onChange={value =>
+              setSearchParams(
+                RouteUrls.HOME({
+                  searchWord,
+                  category,
+                  sortBy: value,
+                  orderBy
+                })
+              )
             }
-          ]}
-          value={sortBy}
-          onChange={value =>
-            setSearchParams(
-              RouteUrls.HOME({
-                searchWord,
-                category,
-                sortBy: value,
-                orderBy
-              })
-            )
-          }
-        />
-        <SelectBox
-          placeholder="정렬방향"
-          options={[
-            {
-              value: 'asc',
-              label: '오름차순'
-            },
-            {
-              value: 'desc',
-              label: '내림차순'
+          />
+          <SelectBox
+            placeholder="정렬방향"
+            options={[
+              {
+                value: 'asc',
+                label: '오름차순'
+              },
+              {
+                value: 'desc',
+                label: '내림차순'
+              }
+            ]}
+            value={orderBy}
+            onChange={value =>
+              setSearchParams(
+                RouteUrls.HOME({
+                  searchWord,
+                  category,
+                  sortBy,
+                  orderBy: value
+                })
+              )
             }
-          ]}
-          value={orderBy}
-          onChange={value =>
-            setSearchParams(
-              RouteUrls.HOME({
-                searchWord,
-                category,
-                sortBy,
-                orderBy: value
-              })
-            )
-          }
-        />
-        <SearchBar
-          value={inputWord}
-          placeholder={'검색할 단어를 입력하세요'}
-          onChange={e => setInputWord(e.target.value)}
-        />
+          />
+          <SearchBar
+            value={inputWord}
+            placeholder={'검색할 단어를 입력하세요'}
+            onChange={e => setInputWord(e.target.value)}
+          />
+        </Flex>
       </Flex>
-
       <Spacing size={40} />
+
       <Table
         size="sm"
         infiniteScroll>
@@ -369,6 +375,13 @@ function Posts() {
           />
         </Table.Body>
       </Table>
+
+      <Flex
+        gap={16}
+        css={{ position: 'fixed', bottom: 12, right: 8 }}>
+        <DeleteAllPostButton />
+        <CreatePostButton />
+      </Flex>
     </>
   )
 }

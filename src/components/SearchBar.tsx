@@ -19,7 +19,7 @@ export function SearchBar({
   value,
   onChange,
   placeholder = 'Search...',
-  width = '300px',
+  width = '224px',
 
   ...props
 }: SearchBarProps) {
@@ -48,6 +48,7 @@ export function SearchBar({
 const searchBarContainer = (width: string) => css`
   position: relative;
   width: ${width};
+  box-sizing: border-box;
 `
 
 const searchIconStyle = css`

@@ -3,7 +3,6 @@ import type { ChangeEvent, InputHTMLAttributes } from 'react'
 import { Text } from './Text'
 import { colors } from '@/constants/colors'
 import { fontSize } from '@/constants/font'
-import { Flex } from './Flex'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   value?: string
@@ -22,22 +21,17 @@ export function Input({
   ...props
 }: InputProps) {
   return (
-    <Flex
-      gap={8}
-      alignContent="center">
-      <div>
-        {label && (
-          <label htmlFor={value}>
-            <Text
-              typography="body3"
-              color={colors.textPrimary}>
-              {label}
-            </Text>
-          </label>
-        )}
-      </div>
+    <label css={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {label && (
+        <Text
+          typography="body3"
+          color={colors.textPrimary}
+          css={{ whiteSpace: 'nowrap' }}>
+          {label}
+        </Text>
+      )}
+
       <input
-        id={value}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
@@ -45,7 +39,7 @@ export function Input({
         css={inputStyle}
         {...props}
       />
-    </Flex>
+    </label>
   )
 }
 
