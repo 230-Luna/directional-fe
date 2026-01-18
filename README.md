@@ -1,5 +1,9 @@
 # 디렉셔널 프론트엔드 과제
 
+## 배포링크
+
+[디렉셔널 FE 과제 배포 링크](https://directional-fe.vercel.app/?searchWord=)
+
 ## 기술 스택
 
 - 프레임워크: React
