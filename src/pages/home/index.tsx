@@ -1,4 +1,9 @@
-import { createPosts, deletePost, deletePosts, fetchPost } from '@/apis/posts'
+import {
+  createPosts,
+  deletePost,
+  deletePosts,
+  fetchPostById
+} from '@/apis/posts'
 import { Button } from '@/components/Button'
 import { Flex } from '@/components/Flex'
 import { Input } from '@/components/Input'
@@ -15,7 +20,6 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog'
 import { useDebounce } from '@/hooks/useDebounce'
 import { usePostDialog } from '@/hooks/usePostDialog'
 import { useQueryParam } from '@/hooks/useQueryParam'
-import type { PostContent } from '@/models/post'
 import { fetchPostsInfiniteQueryOption } from '@/query-options/post'
 import { formatTime } from '@/utils/formattdTime'
 import { RouteUrls } from '@/utils/routeUrls'
@@ -28,6 +32,7 @@ import {
 import { Fragment, Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { FORBIDDEN_WORDS } from './constants/forbidden-word'
+import { noop } from '@/utils/function'
 
 type ColumnKey = 'category' | 'title' | 'tags' | 'createdAt'
 type ResizeFn = (key: ColumnKey, e: React.MouseEvent) => void
@@ -127,71 +132,78 @@ function Posts() {
   const queryClient = useQueryClient()
   const deletePostDialog = useConfirmDialog()
 
-  const handleDeletePostClick = async ({ postId }: { postId: string }) => {
-    const confirmed = await deletePostDialog.open({
-      content: '포스트를 삭제하시겠습니까?',
-      confirmButtonText: '확인',
-      rejectButtonText: '취소'
-    })
-
-    if (!confirmed) {
-      return
-    }
-
-    try {
-      const res = await deletePost({ id: postId })
-
-      if (res.ok) {
-        alert('포스트가 삭제되었습니다')
-
-        queryClient.invalidateQueries({
-          queryKey: ['fetchPosts'],
-          exact: false
+  const handleDeletePostClick = useMutation({
+    mutationFn: async ({ postId }: { postId: string }) => {
+      try {
+        const confirmed = await deletePostDialog.open({
+          content: '포스트를 삭제하시겠습니까?',
+          confirmButtonText: '확인',
+          rejectButtonText: '취소'
         })
-      } else {
-        alert('삭제에 실패했습니다.')
+
+        if (!confirmed) {
+          return
+        }
+
+        const res = await deletePost({ id: postId })
+
+        if (res.ok) {
+          alert('포스트가 삭제되었습니다')
+
+          queryClient.invalidateQueries({
+            queryKey: ['fetchPosts'],
+            exact: false
+          })
+        } else {
+          alert('삭제에 실패했습니다.')
+        }
+      } catch (err) {
+        console.error(err)
+        alert('삭제 중 오류가 발생했습니다.')
       }
-    } catch (err) {
-      console.error(err)
-      alert('삭제 중 오류가 발생했습니다.')
     }
-  }
+  })
 
-  const handleDeletePostsClick = async () => {
-    const confirmed = await deletePostDialog.open({
-      content: '모든 포스트를 삭제하시겠습니까?',
-      confirmButtonText: '확인',
-      rejectButtonText: '취소'
-    })
-
-    if (!confirmed) {
-      return
-    }
-
-    try {
-      const res = await deletePosts()
-
-      if (res.ok) {
-        alert('포스트가 모두 삭제되었습니다')
-
-        queryClient.invalidateQueries({
-          queryKey: ['fetchPosts'],
-          exact: false
+  const handleDeletePostsClick = useMutation({
+    mutationFn: async () => {
+      try {
+        const confirmed = await deletePostDialog.open({
+          content: '모든 포스트를 삭제하시겠습니까?',
+          confirmButtonText: '확인',
+          rejectButtonText: '취소'
         })
-      } else {
-        alert('삭제에 실패했습니다.')
+
+        if (!confirmed) {
+          return
+        }
+
+        const res = await deletePosts()
+
+        if (res.ok) {
+          alert('포스트가 모두 삭제되었습니다')
+
+          queryClient.invalidateQueries({
+            queryKey: ['fetchPosts'],
+            exact: false
+          })
+        } else {
+          alert('삭제에 실패했습니다.')
+        }
+      } catch (err) {
+        console.error(err)
+        alert('삭제 중 오류가 발생했습니다.')
       }
-    } catch (err) {
-      console.error(err)
-      alert('삭제 중 오류가 발생했습니다.')
     }
-  }
+  })
 
   const postDialog = usePostDialog()
 
-  const createPostMutation = useMutation({
-    mutationFn: async (data: PostContent) => {
+  const handleCreatePostClick = useMutation({
+    mutationFn: async () => {
       try {
+        const data = await postDialog.open()
+        if (!data) return
+
         if (
           FORBIDDEN_WORDS.some(forbiddenWord =>
             data.title.includes(forbiddenWord)
@@ -223,26 +235,23 @@ function Posts() {
     }
   })
 
-  const handleCreatePostClick = async () => {
-    if (createPostMutation.isPending) return
-    const result = await postDialog.open()
-    if (!result) return
+  const handleRowClick = useMutation({
+    mutationFn: async ({ postId }: { postId: string }) => {
+      try {
+        const post = await fetchPostById({ id: postId })
 
-    createPostMutation.mutate(result)
-  }
-
-  const handleRowClick = async (postId: string) => {
-    const postData = await fetchPost({ id: postId })
-
-    if (!postData) return
-
-    await postDialog.open({
-      title: postData.title,
-      body: postData.body,
-      tags: postData.tags.join(','),
-      category: postData.category
-    })
-  }
+        await postDialog.open({
+          title: post.title,
+          body: post.body,
+          tags: post.tags.join(','),
+          category: post.category
+        })
+      } catch (error) {
+        console.log(error)
+        window.alert('데이터 조회 중 에러가 발생했어요')
+      }
+    }
+  })
 
   return (
     <>
@@ -252,11 +261,15 @@ function Posts() {
         justify="right"
         gap={16}
         css={{ width: '100%' }}>
-        <Button onClick={() => handleDeletePostsClick()}>전체 삭제</Button>
+        <Button
+          onClick={() => handleDeletePostsClick.mutate()}
+          loading={handleCreatePostClick.isPending}>
+          전체 삭제
+        </Button>
 
         <Button
-          onClick={handleCreatePostClick}
-          disabled={createPostMutation.isPending}>
+          onClick={() => handleCreatePostClick.mutate()}
+          disabled={handleCreatePostClick.isPending}>
           새 글 작성
         </Button>
 
@@ -441,7 +454,11 @@ function Posts() {
                 <Fragment key={post.id}>
                   <Table.Row
                     key={post.id}
-                    onClick={() => handleRowClick(post.id)}>
+                    onClick={
+                      handleRowClick.isPending
+                        ? noop
+                        : () => handleRowClick.mutate({ postId: post.id })
+                    }>
                     {visibleColumns.category && (
                       <Table.Cell
                         css={{
@@ -501,8 +518,9 @@ function Posts() {
                         <Button
                           onClick={e => {
                             e.stopPropagation()
-                            handleDeletePostClick({ postId: post.id })
-                          }}>
+                            handleDeletePostClick.mutate({ postId: post.id })
+                          }}
+                          loading={handleDeletePostClick.isPending}>
                           삭제
                         </Button>
                       </Flex>

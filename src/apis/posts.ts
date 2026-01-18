@@ -38,7 +38,7 @@ export const deletePosts = () => {
 }
 
 // 포스트 한건 조회
-export const fetchPost = ({ id }: { id: string }) => {
+export const fetchPostById = ({ id }: { id: string }) => {
   return httpClient.get<Post>(`/posts/${id}`)
 }
 
