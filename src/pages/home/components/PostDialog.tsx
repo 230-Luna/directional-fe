@@ -13,6 +13,7 @@ import { uniq } from 'es-toolkit'
 export type Category = 'NOTICE' | 'QNA' | 'FREE'
 
 interface PostDialogProps {
+  dialogTitle: string
   open: boolean
   onClose: () => void
   onSubmit: (data: {
@@ -31,6 +32,7 @@ interface PostDialogProps {
 }
 
 export function PostDialog({
+  dialogTitle,
   open,
   onClose,
   onSubmit,
@@ -93,7 +95,7 @@ export function PostDialog({
   return (
     <div css={overlayStyle}>
       <div css={dialogStyle}>
-        <Text typography="h5">{readOnly ? '포스트 조회' : '새 글 작성'}</Text>
+        <Text typography="h5">{dialogTitle}</Text>
         <Spacing size={24} />
 
         <Input

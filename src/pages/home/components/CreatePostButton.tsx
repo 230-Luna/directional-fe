@@ -11,7 +11,7 @@ export function CreatePostButton() {
   const handleButtonClick = useMutation({
     mutationFn: async () => {
       try {
-        const data = await postDialog.open()
+        const data = await postDialog.open({ dialogTitle: '게시글 추가' })
         if (!data) return
 
         if (

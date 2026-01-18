@@ -21,6 +21,7 @@ import { Tag } from '@/components/Tag'
 import { formatTime } from '@/utils/formattdTime'
 import { usePostDialog } from '@/pages/home/hooks/usePostDialog'
 import { fetchPostById } from '@/pages/home/apis/posts'
+import { PostEditButton } from './components/PostEditButton'
 
 type ColumnKey = 'category' | 'title' | 'tags' | 'createdAt'
 
@@ -132,10 +133,14 @@ function Posts() {
         const post = await fetchPostById({ id: postId })
 
         await postDialog.open({
-          title: post.title,
-          body: post.body,
-          tags: post.tags.join(','),
-          category: post.category
+          dialogTitle: '게시글 조회',
+          defaultValues: {
+            title: post.title,
+            body: post.body,
+            tags: post.tags.join(','),
+            category: post.category
+          },
+          readOnly: true
         })
       } catch (error) {
         console.log(error)
@@ -255,64 +260,74 @@ function Posts() {
       <Table
         size="sm"
         infiniteScroll>
-        <Table.Header>
-          <Table.HeaderRow>
-            {visibleColumns.category && (
-              <Table.HeaderCell
-                resizable
-                onResizeHandlerMouseDown={e => startResizing('category', e)}
-                css={{
-                  width: columnWidths.category,
-                  position: 'relative',
-                  userSelect: 'none'
-                }}>
-                카테고리
-              </Table.HeaderCell>
-            )}
-            {visibleColumns.title && (
-              <Table.HeaderCell
-                resizable
-                onResizeHandlerMouseDown={e => startResizing('title', e)}
-                css={{
-                  width: columnWidths.title,
-                  position: 'relative',
-                  userSelect: 'none'
-                }}>
-                제목
-              </Table.HeaderCell>
-            )}
-            {visibleColumns.tags && (
-              <Table.HeaderCell
-                resizable
-                onResizeHandlerMouseDown={e => startResizing('tags', e)}
-                css={{
-                  width: columnWidths.tags,
-                  position: 'relative',
-                  userSelect: 'none'
-                }}>
-                태그
-              </Table.HeaderCell>
-            )}
-            {visibleColumns.createdAt && (
-              <Table.HeaderCell
-                resizable
-                onResizeHandlerMouseDown={e => startResizing('createdAt', e)}
-                css={{
-                  width: columnWidths.createdAt,
-                  position: 'relative',
-                  userSelect: 'none'
-                }}>
-                작성날짜
-              </Table.HeaderCell>
-            )}
+        <Table.HeaderRow>
+          {visibleColumns.category && (
             <Table.HeaderCell
+              resizable
+              onResizeHandlerMouseDown={e => startResizing('category', e)}
               css={{
-                width: '100px'
+                width: columnWidths.category,
+                position: 'relative',
+                userSelect: 'none'
               }}>
-              삭제
+              카테고리
             </Table.HeaderCell>
-          </Table.HeaderRow>
-        </Table.Header>
+          )}
+
+          {visibleColumns.title && (
+            <Table.HeaderCell
+              resizable
+              onResizeHandlerMouseDown={e => startResizing('title', e)}
+              css={{
+                width: columnWidths.title,
+                position: 'relative',
+                userSelect: 'none'
+              }}>
+              제목
+            </Table.HeaderCell>
+          )}
+
+          {visibleColumns.tags && (
+            <Table.HeaderCell
+              resizable
+              onResizeHandlerMouseDown={e => startResizing('tags', e)}
+              css={{
+                width: columnWidths.tags,
+                position: 'relative',
+                userSelect: 'none'
+              }}>
+              태그
+            </Table.HeaderCell>
+          )}
+
+          {visibleColumns.createdAt && (
+            <Table.HeaderCell
+              resizable
+              onResizeHandlerMouseDown={e => startResizing('createdAt', e)}
+              css={{
+                width: columnWidths.createdAt,
+                position: 'relative',
+                userSelect: 'none'
+              }}>
+              작성날짜
+            </Table.HeaderCell>
+          )}
+
+          <Table.HeaderCell
+            css={{
+              width: '100px'
+            }}>
+            삭제
+          </Table.HeaderCell>
+
+          <Table.HeaderCell
+            css={{
+              width: '100px'
+            }}>
+            수정
+          </Table.HeaderCell>
+        </Table.HeaderRow>
+
         <Table.Body>
           {isLoading ? (
             <Table.LoadingRow colSpan={5} />
@@ -359,6 +374,15 @@ function Posts() {
                     }}>
                     <Flex justify="space-around">
                       <PostDeleteButton post={post} />
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell
+                    css={{
+                      width: '100px',
+                      wordBreak: 'break-word'
+                    }}>
+                    <Flex justify="space-around">
+                      <PostEditButton post={post} />
                     </Flex>
                   </Table.Cell>
                 </Table.Row>

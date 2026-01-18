@@ -4,11 +4,19 @@ import type { Category } from '@/pages/home/models/post'
 
 export const usePostDialog = () => {
   return {
-    open: (defaultValues?: {
-      title: string
-      body: string
-      tags: string
-      category: Category
+    open: ({
+      dialogTitle,
+      defaultValues,
+      readOnly
+    }: {
+      dialogTitle: string
+      defaultValues?: {
+        title: string
+        body: string
+        tags: string
+        category: Category
+      }
+      readOnly?: boolean
     }) => {
       return new Promise<{
         title: string
@@ -18,9 +26,10 @@ export const usePostDialog = () => {
       } | null>(resolve => {
         overlay.open(({ isOpen, close }) => (
           <PostDialog
+            dialogTitle={dialogTitle}
             open={isOpen}
             defaultValues={defaultValues}
-            readOnly={!!defaultValues}
+            readOnly={readOnly}
             onClose={() => {
               resolve(null)
               close()

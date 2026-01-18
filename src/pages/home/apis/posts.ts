@@ -43,7 +43,7 @@ export const fetchPostById = ({ id }: { id: string }) => {
 }
 
 // 포스트 한건 업데이트
-export const updatePosts = ({
+export const updatePostById = ({
   id,
   post
 }: {
