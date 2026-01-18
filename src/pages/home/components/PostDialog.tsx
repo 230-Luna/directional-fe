@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { Button } from '../../../components/Button'
-import { Flex } from '../../../components/Flex'
-import { Text } from '../../../components/Text'
-import { Input } from '../../../components/Input'
-import { SelectBox } from '../../../components/SelectBox'
-import { Spacing } from '../../../components/Spacing'
+import { Button } from '@/components/Button'
+import { Flex } from '@/components/Flex'
+import { Text } from '@/components/Text'
+import { Input } from '@/components/Input'
+import { SelectBox } from '@/components/SelectBox'
+import { Spacing } from '@/components/Spacing'
 import { colors } from '@/constants/colors'
 import { css } from '@emotion/react'
-import { Textarea } from '../../../components/TextArea'
+import { Textarea } from '@/components/TextArea'
+import { uniq } from 'es-toolkit'
 
 export type Category = 'NOTICE' | 'QNA' | 'FREE'
 
@@ -54,15 +55,22 @@ export function PostDialog({
   if (!open) return null
 
   const handleSubmit = () => {
+    if (title.length > MAX_TITLE_WORD_LENGTH) {
+      alert(`제목은 최대 ${MAX_TITLE_WORD_LENGTH}자까지 작성할 수 있어요`)
+      return
+    }
+
     if (body.length > MAX_BODY_WORD_LENGTH) {
       alert(`본문은 최대 ${MAX_BODY_WORD_LENGTH}자까지 작성할 수 있어요`)
       return
     }
 
-    const tagList = tags
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(Boolean)
+    const tagList = uniq(
+      tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean)
+    )
 
     if (tagList.length > MAX_NUMBER_OF_TAG) {
       alert(`태그는 최대 ${MAX_NUMBER_OF_TAG}개까지 추가할 수 있어요`)
@@ -149,6 +157,7 @@ export function PostDialog({
   )
 }
 
+const MAX_TITLE_WORD_LENGTH = 80
 const MAX_BODY_WORD_LENGTH = 2000
 const MAX_NUMBER_OF_TAG = 5
 const MAX_TAG_WORD_LENGTH = 24
