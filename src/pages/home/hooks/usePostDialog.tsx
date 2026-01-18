@@ -1,7 +1,6 @@
-// hooks/usePostDialog.tsx
 import { overlay } from 'overlay-kit'
-import { PostDialog } from '@/components/PostDialog'
-import type { Category } from '@/models/post'
+import { PostDialog } from '@/pages/home/components/PostDialog'
+import type { Category } from '@/pages/home/models/post'
 
 export const usePostDialog = () => {
   return {

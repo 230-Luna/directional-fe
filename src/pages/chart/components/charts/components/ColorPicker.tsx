@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 
 function Root({ children }: { children: ReactNode }) {
   return (
-    <section style={{ marginTop: 12, display: 'flex', gap: 12 }}>
+    <section css={{ marginTop: 12, display: 'flex', gap: 12 }}>
       🎨 {children}
     </section>
   )
@@ -20,7 +20,7 @@ function Item({
 }) {
   return (
     <div
-      style={{
+      css={{
         display: 'flex',
         alignItems: 'center',
         gap: 2,
@@ -30,7 +30,7 @@ function Item({
         type="color"
         value={value}
         onChange={e => onChange(e.target.value)}
-        style={{
+        css={{
           border: 'none',
           outline: 'none',
           padding: 0,
@@ -40,7 +40,7 @@ function Item({
           cursor: 'pointer'
         }}
       />
-      <span style={{ fontSize: 12 }}>{title}</span>
+      <span css={{ fontSize: 12 }}>{title}</span>
     </div>
   )
 }

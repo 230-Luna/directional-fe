@@ -1,6 +1,10 @@
 import { colors } from '@/constants/colors'
 import { css } from '@emotion/react'
 import type { ComponentProps, ReactNode } from 'react'
+import { Flex } from './Flex'
+import { LoadingDots } from './LoadingDots'
+import styled from '@emotion/styled'
+import type React from 'react'
 
 type TableSize = 'sm' | 'md' | 'lg'
 
@@ -30,6 +34,8 @@ interface TableHeaderRowProps extends ComponentProps<'tr'> {
 interface TableHeaderCellProps extends ComponentProps<'th'> {
   children: ReactNode
   size?: TableSize
+  resizable?: boolean
+  onResizeHandlerMouseDown?: (e: React.MouseEvent) => void
 }
 
 interface TableCellProps extends ComponentProps<'td'> {
@@ -82,12 +88,17 @@ function TableHeaderRow({ children, ...props }: TableHeaderRowProps) {
 function TableHeaderCell({
   children,
   size = 'md',
+  resizable,
+  onResizeHandlerMouseDown,
   ...props
 }: TableHeaderCellProps) {
   return (
     <th
       css={tableHeaderCellStyle({ size })}
       {...props}>
+      {resizable ? (
+        <ResizeHandle onMouseDown={onResizeHandlerMouseDown} />
+      ) : null}
       {children}
     </th>
   )
@@ -100,6 +111,26 @@ function TableCell({ children, size = 'md', ...props }: TableCellProps) {
       {...props}>
       {children}
     </td>
+  )
+}
+
+function TableLoadingRow({ colSpan }: { colSpan?: number }) {
+  return (
+    <Table.Row>
+      <Table.Cell
+        css={{
+          textAlign: 'center',
+          padding: '20px',
+          color: colors.textSecondary
+        }}
+        colSpan={colSpan}>
+        <Flex
+          justify="center"
+          alignItems="center">
+          <LoadingDots />
+        </Flex>
+      </Table.Cell>
+    </Table.Row>
   )
 }
 
@@ -200,10 +231,33 @@ const tableCellStyle = ({ size = 'md' }: { size?: TableSize }) => css`
   vertical-align: middle;
 `
 
+const ResizeHandle = styled.div`
+  width: 10px;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::before {
+    content: '⋮';
+    color: #aaa;
+    font-size: 14px;
+  }
+
+  &:hover::before {
+    color: #555;
+  }
+`
+
 const Table = Object.assign(TableComponent, {
   Header: TableHeader,
   Body: TableBody,
   Row: TableRow,
+  LoadingRow: TableLoadingRow,
   HeaderRow: TableHeaderRow,
   HeaderCell: TableHeaderCell,
   Cell: TableCell

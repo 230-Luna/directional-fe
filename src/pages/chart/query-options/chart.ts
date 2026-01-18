@@ -5,40 +5,40 @@ import {
   fetchWeeklyWorkoutTrends,
   fetchCoffeeConsumptions,
   fetchSnackImpacts
-} from '@/apis/chart'
+} from '@/pages/chart/apis/chart'
 import { queryOptions } from '@tanstack/react-query'
 
-export const getTopCoffeeBrandsQueryOptions = () =>
+export const fetchTopCoffeeBrandsQueryOptions = () =>
   queryOptions({
     queryKey: ['fetchTopCoffeeBrands'],
     queryFn: () => fetchTopCoffeeBrands()
   })
 
-export const getTopSnackBrandsQueryOptions = () =>
+export const fetchTopSnackBrandsQueryOptions = () =>
   queryOptions({
     queryKey: ['fetchTopSnackBrands'],
     queryFn: () => fetchTopSnackBrands()
   })
 
-export const getWeeklyMoodTrendsQueryOptions = () =>
+export const fetchWeeklyMoodTrendsQueryOptions = () =>
   queryOptions({
     queryKey: ['fetchWeeklyMoodTrends'],
     queryFn: () => fetchWeeklyMoodTrends()
   })
 
-export const getWeeklyWorkoutTrendsQueryOptions = () =>
+export const fetchWeeklyWorkoutTrendsQueryOptions = () =>
   queryOptions({
     queryKey: ['fetchWeeklyWorkoutTrends'],
     queryFn: () => fetchWeeklyWorkoutTrends()
   })
 
-export const getCoffeeConsumptionsQueryOptions = () =>
+export const fetchCoffeeConsumptionsQueryOptions = () =>
   queryOptions({
     queryKey: ['fetchCoffeeConsumptions'],
     queryFn: () => fetchCoffeeConsumptions()
   })
 
-export const getSnackImpactsQueryOptions = () =>
+export const fetchSnackImpactsQueryOptions = () =>
   queryOptions({
     queryKey: ['fetchSnackImpacts'],
     queryFn: () => fetchSnackImpacts()

@@ -1,4 +1,4 @@
-import { fetchPosts } from '@/apis/posts'
+import { fetchPosts } from '@/pages/home/apis/posts'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 
 export const fetchPostsInfiniteQueryOption = ({

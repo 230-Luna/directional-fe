@@ -1,3 +1,4 @@
+import { Text } from '@/components/Text'
 import {
   DonutChart,
   MultiLineChart,
@@ -5,14 +6,15 @@ import {
   BarChart
 } from './components/charts'
 import {
-  getCoffeeConsumptionsQueryOptions,
-  getSnackImpactsQueryOptions,
-  getTopSnackBrandsQueryOptions,
-  getWeeklyMoodTrendsQueryOptions,
-  getWeeklyWorkoutTrendsQueryOptions
+  fetchCoffeeConsumptionsQueryOptions,
+  fetchSnackImpactsQueryOptions,
+  fetchTopSnackBrandsQueryOptions,
+  fetchWeeklyMoodTrendsQueryOptions,
+  fetchWeeklyWorkoutTrendsQueryOptions
 } from './query-options/chart'
 import { useSuspenseQueries } from '@tanstack/react-query'
 import { Suspense } from 'react'
+import { Spacing } from '@/components/Spacing'
 
 export function ChartPage() {
   return (
@@ -31,19 +33,19 @@ function PageComponent() {
     { data: coffeeConsumptions }
   ] = useSuspenseQueries({
     queries: [
-      getWeeklyMoodTrendsQueryOptions(),
-      getTopSnackBrandsQueryOptions(),
-      getWeeklyWorkoutTrendsQueryOptions(),
-      getSnackImpactsQueryOptions(),
-      getCoffeeConsumptionsQueryOptions()
+      fetchWeeklyMoodTrendsQueryOptions(),
+      fetchTopSnackBrandsQueryOptions(),
+      fetchWeeklyWorkoutTrendsQueryOptions(),
+      fetchSnackImpactsQueryOptions(),
+      fetchCoffeeConsumptionsQueryOptions()
     ]
   })
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1>데이터 시각화 과제</h1>
-
-      <h3>(1) `/mock/weekly-mood-trend` 바/도넛 차트</h3>
+    <div css={{ padding: 24 }}>
+      <Text typography="h1">데이터 시각화 과제</Text>
+      <Spacing size={20} />
+      <Text typography="h5">(1) `/mock/weekly-mood-trend` 바/도넛 차트</Text>
       <BarChart
         labels={weeklyMoodeTrends.map(trend => trend.week)}
         series={[
@@ -73,8 +75,9 @@ function PageComponent() {
         }))}
       />
 
-      <h3>(2) `/mock/popular-snack-brands` 바/도넛 차트</h3>
+      <Spacing size={20} />
 
+      <Text typography="h5">(2) `/mock/popular-snack-brands` 바/도넛 차트</Text>
       <BarChart
         labels={topSnackBrands.map(brand => brand.name)}
         value={topSnackBrands.map(brand => brand.share)}
@@ -91,7 +94,11 @@ function PageComponent() {
         ]}
       />
 
-      <h2>(3) `/mock/weekly-mood-trend` 스택형 바 / 면적 차트 </h2>
+      <Spacing size={20} />
+
+      <Text typography="h5">
+        (3) `/mock/weekly-mood-trend` 스택형 바 / 면적 차트{' '}
+      </Text>
       <StackedChart
         xAxis={weeklyMoodeTrends.map(trend => trend.week)}
         type="bar"
@@ -129,7 +136,10 @@ function PageComponent() {
         ]}
       />
 
-      <h2>(4) `/mock/weekly-workout-trend` 스택형 바 / 면적 차트 </h2>
+      <Spacing size={20} />
+      <Text typography="h5">
+        (4) `/mock/weekly-workout-trend` 스택형 바 / 면적 차트
+      </Text>
       <StackedChart
         xAxis={weeklyWorkoutTrends.map(trend => trend.week)}
         type="bar"
@@ -167,7 +177,8 @@ function PageComponent() {
         ]}
       />
 
-      <h2>(5)`/mock/coffee-consumption` 멀티라인 차트</h2>
+      <Spacing size={20} />
+      <Text typography="h5">(5)`/mock/coffee-consumption` 멀티라인 차트</Text>
       <MultiLineChart
         xAxis={coffeeConsumptions.teams[0].series.map(item => item.cups)}
         items={coffeeConsumptions.teams.map(team => ({
@@ -179,7 +190,8 @@ function PageComponent() {
         rightAxisLabel="Productivity"
       />
 
-      <h2>(6)`/mock/snack-impact` 멀티라인 차트</h2>
+      <Spacing size={20} />
+      <Text typography="h5">(6)`/mock/snack-impact` 멀티라인 차트</Text>
       <MultiLineChart
         xAxis={snackImpacts.departments[0].metrics.map(item => item.snacks)}
         items={snackImpacts.departments.map(department => ({

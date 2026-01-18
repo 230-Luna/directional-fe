@@ -1,4 +1,4 @@
-import type { Post, PostContent } from '@/models/post'
+import type { Post, PostContent } from '@/pages/home/models/post'
 import { httpClient } from '@/utils/httpClient'
 
 export interface Posts {

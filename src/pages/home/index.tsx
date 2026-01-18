@@ -1,11 +1,3 @@
-import {
-  createPosts,
-  deletePost,
-  deletePosts,
-  fetchPostById
-} from '@/apis/posts'
-import { Button } from '@/components/Button'
-import { Flex } from '@/components/Flex'
 import { Input } from '@/components/Input'
 import { InViewDetector } from '@/components/InViewDetector'
 import { LoadingDots } from '@/components/LoadingDots'
@@ -13,29 +5,24 @@ import { SearchBar } from '@/components/SearchBar'
 import { SelectBox } from '@/components/SelectBox'
 import { Spacing } from '@/components/Spacing'
 import { Table } from '@/components/Table'
-import { Tag } from '@/components/Tag'
-import { Text } from '@/components/Text'
-import { colors } from '@/constants/colors'
-import { useConfirmDialog } from '@/hooks/useConfirmDialog'
 import { useDebounce } from '@/hooks/useDebounce'
-import { usePostDialog } from '@/hooks/usePostDialog'
 import { useQueryParam } from '@/hooks/useQueryParam'
-import { fetchPostsInfiniteQueryOption } from '@/query-options/post'
-import { formatTime } from '@/utils/formattdTime'
+import { fetchPostsInfiniteQueryOption } from '@/pages/home/query-options/post'
 import { RouteUrls } from '@/utils/routeUrls'
-import styled from '@emotion/styled'
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient
-} from '@tanstack/react-query'
-import { Fragment, Suspense, useEffect, useState } from 'react'
+import { noop, useInfiniteQuery, useMutation } from '@tanstack/react-query'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { FORBIDDEN_WORDS } from './constants/forbidden-word'
-import { noop } from '@/utils/function'
+import { CreatePostButton } from './components/CreatePostButton'
+import { DeleteAllPostButton } from './components/DeleteAllPostButton'
+import { Flex } from '@/components/Flex'
+import { PostDeleteButton } from './components/PostDeleteButton'
+import { PostTableCell } from './components/PostTableCell'
+import { Tag } from '@/components/Tag'
+import { formatTime } from '@/utils/formattdTime'
+import { usePostDialog } from '@/pages/home/hooks/usePostDialog'
+import { fetchPostById } from '@/pages/home/apis/posts'
 
 type ColumnKey = 'category' | 'title' | 'tags' | 'createdAt'
-type ResizeFn = (key: ColumnKey, e: React.MouseEvent) => void
 
 export function HomePage() {
   return (
@@ -88,23 +75,31 @@ function Posts() {
 
   const posts = data?.pages.flatMap(page => page.items) ?? []
 
-  const [visibleColumns, setVisibleColumns] = useState<
-    Record<ColumnKey, boolean>
-  >({
+  const [visibleColumns, setVisibleColumns] = useState<{
+    category: boolean
+    title: boolean
+    tags: boolean
+    createdAt: boolean
+  }>({
     category: true,
     title: true,
     tags: true,
     createdAt: true
   })
 
-  const [columnWidths, setColumnWidths] = useState<Record<ColumnKey, number>>({
+  const [columnWidths, setColumnWidths] = useState<{
+    category: number
+    title: number
+    tags: number
+    createdAt: number
+  }>({
     category: 100,
     title: 200,
     tags: 200,
     createdAt: 100
   })
 
-  const startResizing: ResizeFn = (key, e) => {
+  const startResizing = (key: ColumnKey, e: React.MouseEvent) => {
     e.preventDefault()
 
     const startX = e.clientX
@@ -112,7 +107,7 @@ function Posts() {
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = moveEvent.clientX - startX
-      const newWidth = Math.max(60, startWidth + delta)
+      const newWidth = Math.max(MIN_COLUMN_WIDTH, startWidth + delta)
 
       setColumnWidths(prev => ({
         ...prev,
@@ -129,111 +124,7 @@ function Posts() {
     document.addEventListener('mouseup', onMouseUp)
   }
 
-  const queryClient = useQueryClient()
-  const deletePostDialog = useConfirmDialog()
-
-  const handleDeletePostClick = useMutation({
-    mutationFn: async ({ postId }: { postId: string }) => {
-      try {
-        const confirmed = await deletePostDialog.open({
-          content: '포스트를 삭제하시겠습니까?',
-          confirmButtonText: '확인',
-          rejectButtonText: '취소'
-        })
-
-        if (!confirmed) {
-          return
-        }
-
-        const res = await deletePost({ id: postId })
-
-        if (res.ok) {
-          alert('포스트가 삭제되었습니다')
-
-          queryClient.invalidateQueries({
-            queryKey: ['fetchPosts'],
-            exact: false
-          })
-        } else {
-          alert('삭제에 실패했습니다.')
-        }
-      } catch (err) {
-        console.error(err)
-        alert('삭제 중 오류가 발생했습니다.')
-      }
-    }
-  })
-
-  const handleDeletePostsClick = useMutation({
-    mutationFn: async () => {
-      try {
-        const confirmed = await deletePostDialog.open({
-          content: '모든 포스트를 삭제하시겠습니까?',
-          confirmButtonText: '확인',
-          rejectButtonText: '취소'
-        })
-
-        if (!confirmed) {
-          return
-        }
-
-        const res = await deletePosts()
-
-        if (res.ok) {
-          alert('포스트가 모두 삭제되었습니다')
-
-          queryClient.invalidateQueries({
-            queryKey: ['fetchPosts'],
-            exact: false
-          })
-        } else {
-          alert('삭제에 실패했습니다.')
-        }
-      } catch (err) {
-        console.error(err)
-        alert('삭제 중 오류가 발생했습니다.')
-      }
-    }
-  })
-
   const postDialog = usePostDialog()
-
-  const handleCreatePostClick = useMutation({
-    mutationFn: async () => {
-      try {
-        const data = await postDialog.open()
-        if (!data) return
-
-        if (
-          FORBIDDEN_WORDS.some(forbiddenWord =>
-            data.title.includes(forbiddenWord)
-          )
-        ) {
-          alert('제목에 금칙어가 있어요')
-          return
-        }
-
-        if (
-          FORBIDDEN_WORDS.some(forbiddenWord =>
-            data.body.includes(forbiddenWord)
-          )
-        ) {
-          alert('본문에 금칙어가 있어요')
-          return
-        }
-
-        await createPosts(data)
-        alert('새 글이 등록되었습니다!')
-        queryClient.invalidateQueries({
-          queryKey: ['fetchPosts'],
-          exact: false
-        })
-      } catch (error) {
-        console.error(error)
-        alert('글 등록 중 오류가 발생했습니다.')
-      }
-    }
-  })
 
   const handleRowClick = useMutation({
     mutationFn: async ({ postId }: { postId: string }) => {
@@ -256,22 +147,12 @@ function Posts() {
   return (
     <>
       <Spacing size={16} />
-
       <Flex
         justify="right"
         gap={16}
         css={{ width: '100%' }}>
-        <Button
-          onClick={() => handleDeletePostsClick.mutate()}
-          loading={handleCreatePostClick.isPending}>
-          전체 삭제
-        </Button>
-
-        <Button
-          onClick={() => handleCreatePostClick.mutate()}
-          disabled={handleCreatePostClick.isPending}>
-          새 글 작성
-        </Button>
+        <DeleteAllPostButton />
+        <CreatePostButton />
 
         {(Object.entries(visibleColumns) as [ColumnKey, boolean][]).map(
           ([key, value]) => (
@@ -372,47 +253,49 @@ function Posts() {
           <Table.HeaderRow>
             {visibleColumns.category && (
               <Table.HeaderCell
+                resizable
+                onResizeHandlerMouseDown={e => startResizing('category', e)}
                 css={{
                   width: columnWidths.category,
                   position: 'relative',
                   userSelect: 'none'
                 }}>
-                <ResizeHandle onMouseDown={e => startResizing('category', e)} />
                 카테고리
               </Table.HeaderCell>
             )}
             {visibleColumns.title && (
               <Table.HeaderCell
+                resizable
+                onResizeHandlerMouseDown={e => startResizing('title', e)}
                 css={{
                   width: columnWidths.title,
                   position: 'relative',
                   userSelect: 'none'
                 }}>
-                <ResizeHandle onMouseDown={e => startResizing('title', e)} />
                 제목
               </Table.HeaderCell>
             )}
             {visibleColumns.tags && (
               <Table.HeaderCell
+                resizable
+                onResizeHandlerMouseDown={e => startResizing('tags', e)}
                 css={{
                   width: columnWidths.tags,
                   position: 'relative',
                   userSelect: 'none'
                 }}>
-                <ResizeHandle onMouseDown={e => startResizing('tags', e)} />
                 태그
               </Table.HeaderCell>
             )}
             {visibleColumns.createdAt && (
               <Table.HeaderCell
+                resizable
+                onResizeHandlerMouseDown={e => startResizing('createdAt', e)}
                 css={{
                   width: columnWidths.createdAt,
                   position: 'relative',
                   userSelect: 'none'
                 }}>
-                <ResizeHandle
-                  onMouseDown={e => startResizing('createdAt', e)}
-                />
                 작성날짜
               </Table.HeaderCell>
             )}
@@ -426,24 +309,7 @@ function Posts() {
         </Table.Header>
         <Table.Body>
           {isLoading ? (
-            <Table.Row
-              css={{
-                height: '100vh',
-                textAlign: 'center',
-                padding: '40px',
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                  borderLeft: 'none'
-                }
-              }}>
-              <Table.Cell colSpan={5}>
-                <Flex
-                  justify="center"
-                  alignItems="center">
-                  <LoadingDots />
-                </Flex>
-              </Table.Cell>
-            </Table.Row>
+            <Table.LoadingRow colSpan={5} />
           ) : posts.length === 0 ? (
             <Table.Row>
               <Table.Cell colSpan={5}>데이터가 없어요</Table.Cell>
@@ -451,102 +317,49 @@ function Posts() {
           ) : (
             posts.map(post => {
               return (
-                <Fragment key={post.id}>
-                  <Table.Row
-                    key={post.id}
-                    onClick={
-                      handleRowClick.isPending
-                        ? noop
-                        : () => handleRowClick.mutate({ postId: post.id })
-                    }>
-                    {visibleColumns.category && (
-                      <Table.Cell
-                        css={{
-                          width: columnWidths.category,
-                          textAlign: 'center'
-                        }}>
-                        <Text
-                          typography="caption"
-                          color={colors.textPrimary}>
-                          {post.category}
-                        </Text>
-                      </Table.Cell>
-                    )}
-                    {visibleColumns.title && (
-                      <Table.Cell
-                        css={{
-                          width: columnWidths.title,
-                          textAlign: 'center'
-                        }}>
-                        <Text
-                          typography="body3"
-                          color={colors.textPrimary}>
-                          {post.title}
-                        </Text>
-                      </Table.Cell>
-                    )}
-                    {visibleColumns.tags && (
-                      <Table.Cell
-                        css={{
-                          width: columnWidths.tags,
-                          textAlign: 'center'
-                        }}>
-                        {post.tags.map(tag => (
-                          <Tag key={tag}>{tag}</Tag>
-                        ))}
-                      </Table.Cell>
-                    )}
-                    {visibleColumns.createdAt && (
-                      <Table.Cell
-                        css={{
-                          width: columnWidths.createdAt,
-                          wordBreak: 'break-word'
-                        }}>
-                        <Text
-                          typography="body3"
-                          color={colors.textPrimary}>
-                          {formatTime(post.createdAt)}
-                        </Text>
-                      </Table.Cell>
-                    )}
-                    <Table.Cell
-                      css={{
-                        width: '100px',
-                        wordBreak: 'break-word'
-                      }}>
-                      <Flex justify="space-around">
-                        <Button
-                          onClick={e => {
-                            e.stopPropagation()
-                            handleDeletePostClick.mutate({ postId: post.id })
-                          }}
-                          loading={handleDeletePostClick.isPending}>
-                          삭제
-                        </Button>
-                      </Flex>
-                    </Table.Cell>
-                  </Table.Row>
-                </Fragment>
+                <Table.Row
+                  key={post.id}
+                  onClick={
+                    handleRowClick.isPending
+                      ? noop
+                      : () => handleRowClick.mutate({ postId: post.id })
+                  }>
+                  {visibleColumns.category && (
+                    <PostTableCell width={columnWidths.category}>
+                      {post.category}
+                    </PostTableCell>
+                  )}
+                  {visibleColumns.title && (
+                    <PostTableCell width={columnWidths.title}>
+                      {post.title}
+                    </PostTableCell>
+                  )}
+                  {visibleColumns.tags && (
+                    <PostTableCell width={columnWidths.tags}>
+                      {post.tags.map(tag => (
+                        <Tag key={tag}>{tag}</Tag>
+                      ))}
+                    </PostTableCell>
+                  )}
+                  {visibleColumns.createdAt && (
+                    <PostTableCell width={columnWidths.createdAt}>
+                      {formatTime(post.createdAt)}
+                    </PostTableCell>
+                  )}
+                  <Table.Cell
+                    css={{
+                      width: '100px',
+                      wordBreak: 'break-word'
+                    }}>
+                    <Flex justify="space-around">
+                      <PostDeleteButton post={post} />
+                    </Flex>
+                  </Table.Cell>
+                </Table.Row>
               )
             })
           )}
-          {isFetchingNextPage && (
-            <Table.Row>
-              <Table.Cell
-                css={{
-                  textAlign: 'center',
-                  padding: '20px',
-                  color: colors.textSecondary
-                }}
-                colSpan={4}>
-                <Flex
-                  justify="center"
-                  alignItems="center">
-                  <LoadingDots />
-                </Flex>
-              </Table.Cell>
-            </Table.Row>
-          )}
+          {isFetchingNextPage && <Table.LoadingRow colSpan={5} />}
           <InViewDetector
             onDetect={() => {
               if (hasNextPage && !isFetchingNextPage) {
@@ -560,24 +373,4 @@ function Posts() {
   )
 }
 
-const ResizeHandle = styled.div`
-  width: 10px;
-  height: 100%;
-  position: absolute;
-  right: 0;
-  top: 0;
-  cursor: col-resize;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &::before {
-    content: '⋮';
-    color: #aaa;
-    font-size: 14px;
-  }
-
-  &:hover::before {
-    color: #555;
-  }
-`
+const MIN_COLUMN_WIDTH = 60
