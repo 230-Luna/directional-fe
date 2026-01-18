@@ -54,13 +54,30 @@ export function PostDialog({
   if (!open) return null
 
   const handleSubmit = () => {
+    if (body.length > MAX_BODY_WORD_LENGTH) {
+      alert(`본문은 최대 ${MAX_BODY_WORD_LENGTH}자까지 작성할 수 있어요`)
+      return
+    }
+
+    const tagList = tags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(Boolean)
+
+    if (tagList.length > MAX_NUMBER_OF_TAG) {
+      alert(`태그는 최대 ${MAX_NUMBER_OF_TAG}개까지 추가할 수 있어요`)
+      return
+    }
+
+    if (tagList.some(tag => tag.length > MAX_TAG_WORD_LENGTH)) {
+      alert(`태그 하나에 최대 ${MAX_TAG_WORD_LENGTH}자까지 작성할 수 있어요`)
+      return
+    }
+
     onSubmit({
       title,
       body,
-      tags: tags
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(Boolean),
+      tags: tagList,
       category
     })
   }
@@ -131,6 +148,10 @@ export function PostDialog({
     </div>
   )
 }
+
+const MAX_BODY_WORD_LENGTH = 2000
+const MAX_NUMBER_OF_TAG = 5
+const MAX_TAG_WORD_LENGTH = 24
 
 const overlayStyle = css`
   position: fixed;
